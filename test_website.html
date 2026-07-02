@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطبيب الذكي - تحليل الأشعة للكسور</title>
+    <!-- استيراد خط تجوال -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-dark: #0f172a;
+            --text-gray: #475569;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(2, 132, 199, 0.08);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+
+        p.subtitle {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #93c5fd;
+            background-color: rgba(240, 249, 255, 0.5);
+            border-radius: 16px;
+            padding: 50px 20px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(224, 242, 254, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.1);
+        }
+
+        .upload-area p {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .upload-area p svg {
+            width: 50px;
+            height: 50px;
+            fill: var(--primary);
+            opacity: 0.8;
+            transition: transform 0.3s;
+        }
+
+        .upload-area:hover p svg {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .image-card {
+            background: white;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            animation: slideUp 0.5s ease-out;
+            display: none;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            width: 320px;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .image-card h4 {
+            margin: 10px 0 5px 0;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        button.main-btn {
+            background: linear-gradient(to right, var(--primary), #0ea5e9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+        }
+
+        button.main-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+            background: linear-gradient(to right, var(--primary-hover), var(--primary));
+        }
+
+        button.main-btn:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Modern Loader */
+        .loader-container {
+            display: none;
+            margin: 30px auto;
+        }
+        
+        .lds-ripple {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        .lds-ripple div {
+            position: absolute;
+            border: 4px solid var(--primary);
+            opacity: 1;
+            border-radius: 50%;
+            animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+        }
+        .lds-ripple div:nth-child(2) {
+            animation-delay: -0.5s;
+        }
+        @keyframes lds-ripple {
+            0% { top: 36px; left: 36px; width: 0; height: 0; opacity: 0; }
+            4.9% { top: 36px; left: 36px; width: 0; height: 0; opacity: 0; }
+            5% { top: 36px; left: 36px; width: 0; height: 0; opacity: 1; }
+            100% { top: 0px; left: 0px; width: 72px; height: 72px; opacity: 0; }
+        }
+
+        .analyzing-text {
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 10px;
+            animation: pulseText 1.5s infinite;
+        }
+
+        #result {
+            margin-top: 25px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .success-box { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error-box { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .report-box {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 16px;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-right: 5px solid var(--primary);
+            text-align: right;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            animation: slideUp 0.7s ease-out;
+        }
+
+        .report-box h3 {
+            color: var(--text-dark);
+            font-size: 1.5rem;
+            margin-top: 0;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-item {
+            margin-bottom: 18px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .report-label {
+            font-weight: 800;
+            color: var(--text-gray);
+            display: inline-block;
+            margin-left: 5px;
+            min-width: 140px;
+        }
+
+        .treatment-plan {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .severity-high { color: var(--danger); font-weight: bold; background: #fee2e2; padding: 3px 10px; border-radius: 20px; }
+        .severity-medium { color: var(--warning); font-weight: bold; background: #fef3c7; padding: 3px 10px; border-radius: 20px; }
+        .severity-low { color: var(--success); font-weight: bold; background: #d1fae5; padding: 3px 10px; border-radius: 20px; }
+
+        .print-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .print-btn:hover { background: #059669; transform: translateY(-2px); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseText { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        @media print {
+            body { background: white !important; padding: 0; }
+            .container { box-shadow: none; border: none; max-width: 100%; padding: 0; }
+            h1, p.subtitle, .upload-area, .main-btn, .print-btn, .loader-container { display: none !important; }
+            .image-card { box-shadow: none; border: 1px solid #ccc; display: block !important; break-inside: avoid; }
+            .report-box { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; }
+            .treatment-plan { background: transparent !important; border: 1px solid #ccc; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>👨‍⚕️ الطبيب الذكي (AI Doctor)</h1>
+    <p class="subtitle">نظام تحليل الأشعة السينية المدعوم بالذكاء الاصطناعي لكشف وتصنيف الكسور</p>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <p id="upload-text">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+            </svg>
+            انقر هنا لرفع صورة الأشعة (X-Ray)
+        </p>
+        <input type="file" id="fileInput" accept="image/jpeg, image/png, image/jpg">
+        
+        <div class="image-container">
+            <div class="image-card" id="original-card">
+                <h4 style="color: var(--text-dark);">الأشعة الأصلية</h4>
+                <img id="preview" alt="Preview">
+            </div>
+            <div class="image-card" id="heatmap-card">
+                <h4 style="color: var(--danger);">مكان الإصابة (Grad-CAM)</h4>
+                <img id="heatmap" alt="Heatmap">
+            </div>
+        </div>
+    </div>
+
+    <button id="submitBtn" class="main-btn" disabled>✨ بدء التحليل الذكي</button>
+    
+    <div class="loader-container" id="loader">
+        <div class="lds-ripple"><div></div><div></div></div>
+        <div class="analyzing-text">جاري فحص الأشعة بدقة...</div>
+    </div>
+
+    <div id="result"></div>
+    <div id="medical-report" class="report-box"></div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const heatmap = document.getElementById('heatmap');
+    const uploadText = document.getElementById('upload-text');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultBox = document.getElementById('result');
+    const loader = document.getElementById('loader');
+    
+    const originalCard = document.getElementById('original-card');
+    const heatmapCard = document.getElementById('heatmap-card');
+    const reportBox = document.getElementById('medical-report');
+
+    let selectedFile = null;
+
+    // لما تختار صورة
+    fileInput.addEventListener('change', function(event) {
+        if (event.target.files && event.target.files[0]) {
+            selectedFile = event.target.files[0];
+            
+            // معاينة الصورة
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                originalCard.style.display = 'block';
+                uploadText.style.display = 'none';
+                
+                // إخفاء النتائج القديمة
+                heatmapCard.style.display = 'none';
+                reportBox.style.display = 'none';
+                resultBox.style.display = 'none';
+            }
+            reader.readAsDataURL(selectedFile);
+            
+            // تفعيل الزر
+            submitBtn.disabled = false;
+        }
+    });
+
+    // لما تضغط على زر التحليل
+    submitBtn.addEventListener('click', async function() {
+        if (!selectedFile) return;
+
+        // إظهار التحميل وإخفاء النتائج القديمة
+        loader.style.display = 'block';
+        submitBtn.disabled = true;
+        resultBox.style.display = 'none';
+        reportBox.style.display = 'none';
+        heatmapCard.style.display = 'none';
+        resultBox.className = '';
+
+        // تجهيز بيانات الملف للإرسال
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+            // إرسال الريكويست لـ API
+            const response = await fetch("/predict", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // لو نجح التحليل
+                resultBox.innerHTML = `نتيجة الفحص المبدئي: ${data.prediction} <br> نسبة اليقين: ${data.confidence}%`;
+                resultBox.className = 'success-box';
+                
+                // عرض الهيت ماب
+                if (data.heatmap) {
+                    heatmap.src = "data:image/jpeg;base64," + data.heatmap;
+                    heatmapCard.style.display = 'block';
+                }
+                
+                // عرض التقرير الطبي
+                if (data.report_data) {
+                    if (data.report_data.error) {
+                        reportBox.innerHTML = `<p style="color:var(--danger); text-align:center; font-weight:bold;">${data.report_data.error}</p>`;
+                        reportBox.style.display = 'block';
+                    } else {
+                        const r = data.report_data;
+                        let sevClass = "severity-medium";
+                        if (r.severity && r.severity.includes("شديد")) sevClass = "severity-high";
+                        if (r.severity && r.severity.includes("بسيط")) sevClass = "severity-low";
+                        
+                        reportBox.innerHTML = `
+                            <h3>🩺 التقرير الطبي الشامل</h3>
+                            <div class="report-item"><span class="report-label">🦴 العظمة المتأثرة:</span> ${r.bone_name || 'غير محدد'}</div>
+                            <div class="report-item"><span class="report-label">⚡ نوع الكسر:</span> ${r.fracture_type || 'غير محدد'}</div>
+                            <div class="report-item"><span class="report-label">⚠️ درجة الخطورة:</span> <span class="${sevClass}">${r.severity || 'غير محدد'}</span></div>
+                            <div class="report-item"><span class="report-label">📝 الوصف الطبي:</span> ${r.report || 'غير محدد'}</div>
+                            
+                            <div class="treatment-plan">
+                                <span class="report-label" style="color:var(--primary); font-size:1.2rem; margin-bottom:10px; display:block;">💊 الخطة العلاجية والتوصيات:</span> 
+                                ${r.treatment_plan || 'غير محدد'}
+                            </div>
+                            
+                            <button class="print-btn" onclick="window.print()">
+                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                                طباعة التقرير (PDF)
+                            </button>
+                        `;
+                        reportBox.style.display = 'block';
+                    }
+                }
+            } else {
+                // لو السيرفر رجع إيرور
+                resultBox.innerHTML = `حدث خطأ: ${data.error}`;
+                resultBox.className = 'error-box';
+            }
+        } catch (error) {
+            resultBox.innerHTML = "حدث خطأ في الاتصال بالسيرفر. يرجى التأكد من تشغيل API.";
+            resultBox.className = 'error-box';
+            console.error(error);
+        } finally {
+            // إخفاء التحميل وإرجاع الزر لحالته
+            loader.style.display = 'none';
+            submitBtn.disabled = false;
+            resultBox.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>
