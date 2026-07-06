@@ -142,6 +142,8 @@ async def chat_endpoint(request: ChatRequest):
                 else:
                     reply_msg = f"عذراً، حدث خطأ مؤقت أثناء الاتصال. يرجى المحاولة لاحقاً. ({str(e)})" if request.lang == "ar" else f"Sorry, a temporary connection error occurred. Please try again later. ({str(e)})"
                 return {"success": False, "reply": reply_msg}
+    except Exception as e:
+        return {"success": False, "reply": f"An unexpected error occurred: {str(e)}"}
 
 @app.post("/summarize")
 async def summarize_endpoint(request: SummarizeRequest):
@@ -191,8 +193,9 @@ async def summarize_endpoint(request: SummarizeRequest):
                 if "429" in error_str or "exhausted" in error_str or "quota" in error_str:
                     if attempt < max_retries - 1:
                         continue
-                
                 return {"success": False, "reply": f"حدث خطأ أثناء التلخيص: {str(e)}"}
+    except Exception as e:
+        return {"success": False, "reply": f"حدث خطأ أثناء التلخيص: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
