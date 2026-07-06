@@ -121,19 +121,27 @@ async def chat_endpoint(request: ChatRequest):
             
         contents.append(types.Content(role="user", parts=[types.Part.from_text(text=request.message)]))
         
-        response = get_gemini_client().models.generate_content(
-            model='gemini-2.5-flash',
-            contents=contents,
-            config=config
-        )
-        return {"success": True, "reply": response.text}
-    except Exception as e:
-        error_str = str(e).lower()
-        if "503" in error_str or "unavailable" in error_str or "high demand" in error_str:
-            reply_msg = "عذراً، المساعد الذكي يواجه ضغطاً كبيراً في الوقت الحالي. يرجى المحاولة مرة أخرى بعد قليل." if request.lang == "ar" else "Sorry, the AI assistant is currently facing high demand. Please try again later."
-        else:
-            reply_msg = f"عذراً، حدث خطأ مؤقت أثناء الاتصال. يرجى المحاولة لاحقاً. ({str(e)})" if request.lang == "ar" else f"Sorry, a temporary connection error occurred. Please try again later. ({str(e)})"
-        return {"success": False, "reply": reply_msg}
+        max_retries = len(gemini_clients)
+        for attempt in range(max_retries):
+            try:
+                response = get_gemini_client().models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=contents,
+                    config=config
+                )
+                return {"success": True, "reply": response.text}
+            except Exception as e:
+                error_str = str(e).lower()
+                # If quota exhausted, try next key
+                if "429" in error_str or "exhausted" in error_str or "quota" in error_str:
+                    if attempt < max_retries - 1:
+                        continue
+                
+                if "503" in error_str or "unavailable" in error_str or "high demand" in error_str:
+                    reply_msg = "عذراً، المساعد الذكي يواجه ضغطاً كبيراً في الوقت الحالي. يرجى المحاولة مرة أخرى بعد قليل." if request.lang == "ar" else "Sorry, the AI assistant is currently facing high demand. Please try again later."
+                else:
+                    reply_msg = f"عذراً، حدث خطأ مؤقت أثناء الاتصال. يرجى المحاولة لاحقاً. ({str(e)})" if request.lang == "ar" else f"Sorry, a temporary connection error occurred. Please try again later. ({str(e)})"
+                return {"success": False, "reply": reply_msg}
 
 @app.post("/summarize")
 async def summarize_endpoint(request: SummarizeRequest):
@@ -168,16 +176,23 @@ async def summarize_endpoint(request: SummarizeRequest):
             ]
         )
 
-        response = get_gemini_client().models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[prompt],
-            config=config
-        )
-        return {"success": True, "reply": response.text}
-    except Exception as e:
-        import traceback
-        err_msg = str(e)
-        return {"success": False, "reply": f"حدث خطأ أثناء التلخيص: {err_msg}"}
+        max_retries = len(gemini_clients)
+        for attempt in range(max_retries):
+            try:
+                response = get_gemini_client().models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[prompt],
+                    config=config
+                )
+                return {"success": True, "reply": response.text}
+            except Exception as e:
+                error_str = str(e).lower()
+                # If quota exhausted, try next key
+                if "429" in error_str or "exhausted" in error_str or "quota" in error_str:
+                    if attempt < max_retries - 1:
+                        continue
+                
+                return {"success": False, "reply": f"حدث خطأ أثناء التلخيص: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
