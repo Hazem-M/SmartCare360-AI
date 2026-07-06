@@ -12,8 +12,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application files
 COPY . .
 
-# Expose port 7860 (Hugging Face default)
-EXPOSE 7860
-
 # Command to run the FastAPI server (Supports Railway dynamic PORT)
-CMD uvicorn api:app --host 0.0.0.0 --port ${PORT:-7860}
+CMD sh -c "python -m uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"
