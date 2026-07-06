@@ -15,6 +15,7 @@ import base64
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+import itertools
 
 # Grad-CAM imports
 from pytorch_grad_cam import GradCAM
@@ -24,10 +25,14 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 load_dotenv()
 # Initialize Gemini Keys (Rotation for avoiding limits)
 API_KEYS = [
-    os.getenv("GEMINI_API_KEY", "PUT_YOUR_API_KEY_HERE"),
-    # أضف مفاتيحك الإضافية هنا لمضاعفة الليميت (كل مفتاح يعطيك 15 طلب إضافي في الدقيقة):
-    # "YOUR_SECOND_API_KEY_HERE",
-    # "YOUR_THIRD_API_KEY_HERE",
+    os.getenv("GEMINI_API_KEY_1", ""),
+    os.getenv("GEMINI_API_KEY_2", ""),
+    os.getenv("GEMINI_API_KEY_3", ""),
+    os.getenv("GEMINI_API_KEY_4", ""),
+    os.getenv("GEMINI_API_KEY_5", ""),
+    os.getenv("GEMINI_API_KEY_6", ""),
+    os.getenv("GEMINI_API_KEY_7", ""),
+    os.getenv("GEMINI_API_KEY_8", "")
 ]
 API_KEYS = [k for k in API_KEYS if k and k != "??_?????_??????_???"]
 
