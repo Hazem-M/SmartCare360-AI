@@ -125,7 +125,7 @@ async def chat_endpoint(request: ChatRequest):
         for attempt in range(max_retries):
             try:
                 response = get_gemini_client().models.generate_content(
-                    model='gemini-1.5-flash',
+                    model='gemini-2.5-flash',
                     contents=contents,
                     config=config
                 )
@@ -182,7 +182,7 @@ async def summarize_endpoint(request: SummarizeRequest):
         for attempt in range(max_retries):
             try:
                 response = get_gemini_client().models.generate_content(
-                    model='gemini-1.5-flash',
+                    model='gemini-2.5-flash',
                     contents=[prompt],
                     config=config
                 )
