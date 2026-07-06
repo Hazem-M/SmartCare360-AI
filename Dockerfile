@@ -19,5 +19,5 @@ COPY . .
 # Expose port 7860 (Hugging Face default)
 EXPOSE 7860
 
-# Command to run the FastAPI server
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "7860"]
+# Command to run the FastAPI server (Supports Railway dynamic PORT)
+CMD uvicorn api:app --host 0.0.0.0 --port ${PORT:-7860}
