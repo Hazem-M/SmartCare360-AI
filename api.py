@@ -125,15 +125,15 @@ async def chat_endpoint(request: ChatRequest):
         for attempt in range(max_retries):
             try:
                 response = get_gemini_client().models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-1.5-flash',
                     contents=contents,
                     config=config
                 )
                 return {"success": True, "reply": response.text}
             except Exception as e:
                 error_str = str(e).lower()
-                # If quota exhausted, try next key
-                if "429" in error_str or "exhausted" in error_str or "quota" in error_str:
+                # Try next key on quota or 503 errors
+                if "429" in error_str or "exhausted" in error_str or "quota" in error_str or "503" in error_str or "unavailable" in error_str:
                     if attempt < max_retries - 1:
                         continue
                 
@@ -182,15 +182,15 @@ async def summarize_endpoint(request: SummarizeRequest):
         for attempt in range(max_retries):
             try:
                 response = get_gemini_client().models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-1.5-flash',
                     contents=[prompt],
                     config=config
                 )
                 return {"success": True, "reply": response.text}
             except Exception as e:
                 error_str = str(e).lower()
-                # If quota exhausted, try next key
-                if "429" in error_str or "exhausted" in error_str or "quota" in error_str:
+                # Try next key on quota or 503 errors
+                if "429" in error_str or "exhausted" in error_str or "quota" in error_str or "503" in error_str or "unavailable" in error_str:
                     if attempt < max_retries - 1:
                         continue
                 return {"success": False, "reply": f"حدث خطأ أثناء التلخيص: {str(e)}"}
